@@ -53,19 +53,19 @@ print_pid:
 
 	movl	$SYS_WRITE, %eax
 	movl	$STDOUT_FILENO, %edi
-	leaq	pid_str(%rip), %rsi
+	movq	$pid_str, %rsi
 	movl	$pid_str_len, %edx
 	syscall
 
 	movl	$SYS_WRITE, %eax
 	movl	$STDOUT_FILENO, %edi
-	leaq	ascii_digit(%rip), %rsi
+	movq	$ascii_digit, %rsi
 	movl	%ebx, %edx
 	syscall
 
 	movl	$SYS_WRITE, %eax
 	movl	$STDOUT_FILENO, %edi
-	leaq	newline(%rip), %rsi
+	movq	$newline, %rsi
 	movl	$1, %edx
 	syscall
 
