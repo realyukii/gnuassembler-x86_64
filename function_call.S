@@ -12,6 +12,8 @@ ascii_digit:
 
 /* credit: https://stackoverflow.com/a/9114996/22382954
 * unsigned int int_to_ascii(unsigned int number)
+* ChatGPT discussion:
+* https://chatgpt.com/share/682b3a7b-1164-8002-982d-f36ac8718ae5
 */
 int_to_ascii:
 	movl	%edi, %eax		/* number to be converted */
