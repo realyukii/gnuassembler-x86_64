@@ -24,7 +24,7 @@ int main(void)
     printf("plain text: %s\n", plain);
 
     xorstr(chipertext, msg_len, randomkey);
-    printf("XORed text: ");
+    printf("XORed text (ciphertext): ");
     for (size_t i = 0; i < msg_len; i++)
     {
         printf("0x%02X ", (unsigned char)chipertext[i]);
