@@ -1,4 +1,4 @@
-all: build/linux_syscall build/function_call
+all: build/linux_syscall build/function_call build/simplexor
 
 build/linux_syscall: ./linux_syscall.S
 	as ./linux_syscall.S -o ./build/linux_syscall.o
@@ -8,3 +8,5 @@ build/function_call: ./function_call.S
 	as ./function_call.S -o ./build/function_call.o
 	ld ./build/function_call.o -o ./build/function_call
 
+build/simplexor: ./xor.c
+	gcc ./xor.c -o $@
