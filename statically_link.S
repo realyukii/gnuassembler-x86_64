@@ -33,7 +33,10 @@ _start:
 	movl	%eax, %ebx
 
 	/*
-	* count length at assemble-time is possible,
+	* count length at assemble-time with GNU assembler is possible
+	* see:
+	* - https://sourceware.org/binutils/docs/as/Dot.html
+	* - https://stackoverflow.com/a/11375043/22382954
 	* but let's see if we have another option.
 	*/
 	leaq	str_length(%rip), %rdi
