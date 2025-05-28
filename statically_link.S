@@ -3,6 +3,9 @@
 
 .equ STDOUT_FILENO, 1
 
+.extern strlen
+.extern int_to_ascii
+
 .section .bss
 ascii_digit:
 	.space 16, 0
