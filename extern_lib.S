@@ -1,10 +1,14 @@
+/* tell the linker that the following label is globlaly or publlicly exposed */
 .global strlen
 .global int_to_ascii
 
 .section .text
-/* int strlen(char *str) */
+/*
+* int strlen(char *str)
+* iterate the str until it find null-terminated byte and return its length
+*/
 strlen:
-	/* total length */
+	/* total length, the counter */
 	xorl	%eax, %eax
 .start_count:
 	cmpb	$0, (%rdi, %rax)
@@ -39,7 +43,7 @@ int_to_ascii:
 	pushq	%rdx		/* rdx is a digit in range [0..9] */
 	incl	%ebx		/* count digits */
 	testl	%eax, %eax	/* EAX is 0? */
-	jnz	.divide		/* no, continue */
+	jnz	.divide		/* no, continue to the next loop */
 
 	/*
 	* POP digits from stack in reverse order
