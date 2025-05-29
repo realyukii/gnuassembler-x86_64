@@ -25,12 +25,19 @@ failed_to_decrypt:
 dec_result_str:
 	.string "decrypted text: %s\n"
 
-enc_result_str:
+readable_enc_result_str:
 	.string "readable ciphertext: "
-	enc_result_str_len = . - enc_result_str
+	readable_enc_result_str_len = . - readable_enc_result_str
+
+copyable_enc_result_str:
+	.string "copyable ciphertext: "
+	copyable_enc_result_str_len = . - copyable_enc_result_str
 
 enc_fmt_str:
 	.string "0x%02X "
+
+enc_2nd_fmt_str:
+	.string "%02X"
 
 empty:
 	.ascii "\0"
@@ -88,9 +95,10 @@ encrypt:
 	movl	%ebx, %edx
 	callq	xorstr
 
+	/* readable */
 	movl	$STDOUT_FILENO, %edi
-	leaq	enc_result_str(%rip), %rsi
-	movl	$enc_result_str_len, %edx
+	leaq	readable_enc_result_str(%rip), %rsi
+	movl	$readable_enc_result_str_len, %edx
 	movl	$__NR_write, %eax
 	syscall
 
@@ -110,6 +118,33 @@ encrypt:
 	incl	%r13d
 	cmpl	%r12d, %r13d
 	jne	.print_ciphertext
+
+	leaq	empty(%rip), %rdi
+	callq	puts
+
+	/* copyable */
+	movl	$STDOUT_FILENO, %edi
+	leaq	copyable_enc_result_str(%rip), %rsi
+	movl	$copyable_enc_result_str_len, %edx
+	movl	$__NR_write, %eax
+	syscall
+
+	/* use register %r13 as index and counter of the loop */
+	xorl	%r13d, %r13d
+.print_ciphertext_2nd:
+	leaq	enc_2nd_fmt_str(%rip), %rdi
+	/*
+	* zeroing upper bits of %rsi as in the subsequent line,
+	* we only use the 8-bit lower bits
+	*/
+	xorl	%esi, %esi
+	movb	(%rbp, %r13), %sil
+	xorl	%eax, %eax
+	callq	printf
+
+	incl	%r13d
+	cmpl	%r12d, %r13d
+	jne	.print_ciphertext_2nd
 
 	leaq	empty(%rip), %rdi
 	callq	puts
