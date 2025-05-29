@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 void xorstr(unsigned char *bytes, int len, int randomkey)
 {
@@ -8,7 +9,10 @@ void xorstr(unsigned char *bytes, int len, int randomkey)
 		bytes[i] ^= randomkey;
 }
 
-/* credit: https://stackoverflow.com/a/35452093/22382954 */
+/*
+* convert ascii-hex into actual byte represented by these hex
+* credit: https://stackoverflow.com/a/35452093/22382954
+*/
 uint8_t *datahex(char *string)
 {
 	size_t slength = strlen(string);

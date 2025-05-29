@@ -3,8 +3,11 @@
 #define ARGV0_POS	0
 #define ARGV1_POS	ARGV0_POS + 8
 #define ARGV2_POS	ARGV1_POS + 8
+#define ARGV3_POS	ARGV2_POS + 8
 
 .extern xorstr
+.extern datahex
+.extern atoi
 .extern rand
 .extern puts
 .extern printf
@@ -15,12 +18,15 @@
 privkey_str:
 	.string "your private key: %d\n"
 
-stub_str:
-	.string "TODO\n"
-	stub_str_len = . - stub_str
+failed_to_decrypt:
+	.string "failed to decrypt, make sure the supplied ascii-hex is a valid one.\n"
+	failed_to_decrypt_len = . - failed_to_decrypt
+
+dec_result_str:
+	.string "decrypted text: %s\n"
 
 enc_result_str:
-	.string "ciphertext: "
+	.string "readable ciphertext: "
 	enc_result_str_len = . - enc_result_str
 
 enc_fmt_str:
@@ -30,7 +36,7 @@ empty:
 	.ascii "\0"
 
 usage_str:
-	.string "usage: crypt <enc|dec> <bytes>\n"
+	.string "usage: crypt <enc|dec> <bytes> [private key]\n"
 	usage_str_len = . - usage_str
 
 enc_str:
@@ -115,26 +121,83 @@ encrypt:
 	retq
 
 /*
-* void decrypt(char *ascii_hex, int private_key)
+* void decrypt(char *ascii_hex, char *private_key)
 */
 decrypt:
+	pushq	%rbx
+	pushq	%rbp
+	pushq	%r12
+	pushq	%r13
+
+	movq	%rdi, %r12
+	movq	%rsi, %rbx
+
+	callq	datahex
+
+	/* if datahex return NULL, the supplied ascii_hex is invalid */
+	testq	%rax, %rax
+	je	.error
+
+	/* store pointer created by malloc in register %rbp */
+	movq	%rax, %rbp
+
+	/* count length of ascii_hex and divide it by two */
+	movq	%r12, %rdi
+	callq	strlen
+	movl	%eax, %r13d
+
+	/*
+	* assuming the supplied ascii-hex is even,
+	* get the actual length by divide it with two
+	*
+	* actually, it's not an assumption, datahex will return NULL
+	* if the supplied ascii_hex not even
+	*/
+	xorl	%edx, %edx
+	movl	$2, %ecx
+	divl	%ecx
+	/* add null-byte at the end of decrypted-string */
+	movl	$0, (%rbp, %rax)
+
+	movq	%rbx, %rdi
+	call	atoi
+
+	movq	%rbp, %rdi
+	movl	%r13d, %esi
+	movl	%eax, %edx
+	callq	xorstr
+
+	leaq	dec_result_str(%rip), %rdi
+	movq	%rbp, %rsi
+	xorl	%eax, %eax
+	callq	printf
+
+	jmp	.exit_dec
+.error:
 	movl	$STDOUT_FILENO, %edi
-	leaq	stub_str(%rip), %rsi
-	movl	$stub_str_len, %edx
+	leaq	failed_to_decrypt(%rip), %rsi
+	movl	$failed_to_decrypt_len, %edx
 	movl	$__NR_write, %eax
 	syscall
-
+.exit_dec:
+	popq	%r13
+	popq	%r12
+	popq	%rbp
+	popq	%rbx
 	retq
 
 main:
 	pushq	%rbx
+	pushq	%rbp
 
 	/* store char **argv in register %rbx */
 	movq	%rsi, %rbx
+	/* store argc in register %rbp */
+	movl	%edi, %ebp
 
-	/* compare argc with 3 */
+	/* jump to usage if argc < 3 */
 	cmpl	$3, %edi
-	jne	.invalid_usage
+	jl	.invalid_usage
 
 	/* check argv[1] == "enc" or argv[1] == "dec" */
 	leaq	enc_str(%rip), %rdi
@@ -162,7 +225,12 @@ main:
 	jmp	.exit
 
 .handle_decrypt:
+	/* compare argc with 4 */
+	cmpl	$4, %ebp
+	jne	.invalid_usage
+
 	movq	ARGV2_POS(%rbx), %rdi
+	movq	ARGV3_POS(%rbx), %rsi
 	callq	decrypt
 
 	jmp	.exit
@@ -171,6 +239,7 @@ main:
 	callq	print_usage
 
 .exit:
+	popq	%rbp
 	popq	%rbx
 	xorl	%eax, %eax
 	retq
