@@ -193,6 +193,7 @@ decrypt:
 	divl	%ecx
 	/* add null-byte at the end of decrypted-string */
 	movl	$0, (%rbp, %rax)
+	movl	%eax, %r13d
 
 	movq	%rbx, %rdi
 	call	atoi
