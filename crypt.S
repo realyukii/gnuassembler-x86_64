@@ -9,6 +9,8 @@
 .extern datahex
 .extern atoi
 .extern rand
+.extern srand
+.extern time
 .extern puts
 .extern printf
 
@@ -75,6 +77,12 @@ encrypt:
 
 	/* save plaintext to register %rbp */
 	movq	%rdi, %rbp
+
+	xorl	%edi, %edi
+	callq	time
+
+	movq	%rax, %rdi
+	callq	srand
 
 	/* generate private key and store it on register %rbx */
 	callq	rand
