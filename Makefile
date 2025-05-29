@@ -12,7 +12,7 @@ build/simplexor: ./xor.c
 	gcc ./xor.c -o $@
 
 build/crypt: ./extern_routine.c ./crypt.S
-	gcc $^ -o $@
+	gcc -O0 -g3 $^ -o $@
 
 build/statically_linked: ./build/statically_linked.o ./build/extern_lib.o
 	ld $^ -o $@
