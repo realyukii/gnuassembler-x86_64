@@ -11,7 +11,7 @@ build/function_call: ./build/extern_lib.o ./function_call.S
 build/simplexor: ./xor.c
 	gcc ./xor.c -o $@
 
-build/crypt: ./crypt.S
+build/crypt: ./extern_routine.c ./crypt.S
 	gcc $^ -o $@
 
 build/statically_linked: ./build/statically_linked.o ./build/extern_lib.o
