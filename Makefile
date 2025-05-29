@@ -1,4 +1,4 @@
-all: build/linux_syscall build/function_call build/simplexor build/statically_linked
+all: build/linux_syscall build/function_call build/simplexor build/statically_linked build/crypt
 
 build/linux_syscall: ./linux_syscall.S
 	as ./linux_syscall.S -o ./build/linux_syscall.o
@@ -10,6 +10,9 @@ build/function_call: ./build/extern_lib.o ./function_call.S
 
 build/simplexor: ./xor.c
 	gcc ./xor.c -o $@
+
+build/crypt: ./crypt.S
+	gcc $^ -o $@
 
 build/statically_linked: ./build/statically_linked.o ./build/extern_lib.o
 	ld $^ -o $@
