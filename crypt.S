@@ -15,6 +15,10 @@
 privkey_str:
 	.string "your private key: %d\n"
 
+stub_str:
+	.string "TODO\n"
+	stub_str_len = . - stub_str
+
 enc_result_str:
 	.string "ciphertext: "
 	enc_result_str_len = . - enc_result_str
@@ -110,18 +114,56 @@ encrypt:
 	popq	%rbx
 	retq
 
+/*
+* void decrypt(char *ascii_hex, int private_key)
+*/
 decrypt:
-	/* TODO */
+	movl	$STDOUT_FILENO, %edi
+	leaq	stub_str(%rip), %rsi
+	movl	$stub_str_len, %edx
+	movl	$__NR_write, %eax
+	syscall
+
+	retq
 
 main:
-	/* TODO: check argv[1] == "enc" or argv[1] == "dec" */
+	pushq	%rbx
+
+	/* store char **argv in register %rbx */
+	movq	%rsi, %rbx
 
 	/* compare argc with 3 */
 	cmpl	$3, %edi
 	jne	.invalid_usage
 
-	movq	ARGV2_POS(%rsi), %rdi
+	/* check argv[1] == "enc" or argv[1] == "dec" */
+	leaq	enc_str(%rip), %rdi
+	movq	ARGV1_POS(%rbx), %rsi
+	movl	$enc_str_len, %edx
+	callq	strncmp
+
+	testl	%eax, %eax
+	je	.handle_encrypt
+
+	leaq	dec_str(%rip), %rdi
+	movq	ARGV1_POS(%rbx), %rsi
+	movl	$dec_str_len, %edx
+	callq	strncmp
+
+	testl	%eax, %eax
+	je	.handle_decrypt
+
+	jmp	.invalid_usage
+
+.handle_encrypt:
+	movq	ARGV2_POS(%rbx), %rdi
 	callq	encrypt
+
+	jmp	.exit
+
+.handle_decrypt:
+	movq	ARGV2_POS(%rbx), %rdi
+	callq	decrypt
 
 	jmp	.exit
 
@@ -129,5 +171,6 @@ main:
 	callq	print_usage
 
 .exit:
+	popq	%rbx
 	xorl	%eax, %eax
 	retq
